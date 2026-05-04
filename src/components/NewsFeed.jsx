@@ -4,21 +4,30 @@ export default function NewsFeed({ onSelect }) {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadNews() {
-      try {
-        const res = await fetch("/api/guardian");
-        const data = await res.json();
-        setArticles(data);
-      } catch (err) {
-        console.error("Error loading news:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
+useEffect(() => {
+  async function loadNews() {
+    try {
+      const res = await fetch(
+        `https://content.guardianapis.com/search?show-fields=bodyText&page-size=10&api-key=${import.meta.env.VITE_GUARDIAN_API_KEY}`
+      );
 
-    loadNews();
-  }, []);
+      const data = await res.json();
+
+      const articles = data.response.results.map((a) => ({
+        title: a.webTitle,
+        content: a.fields?.bodyText || "",
+      }));
+
+      setArticles(articles);
+    } catch (err) {
+      console.error("Error loading news:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadNews();
+}, []);
 
   return (
     <div className="panel">
