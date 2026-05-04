@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 export default function NewsFeed({ onSelect }) {
   const [articles, setArticles] = useState([]);
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.fetch("/api/guardian");
 
 fetch(`${API_URL}/api/guardian`)
 
