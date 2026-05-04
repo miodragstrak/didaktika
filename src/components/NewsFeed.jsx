@@ -8,7 +8,7 @@ export default function NewsFeed({ onSelect }) {
 fetch(`${API_URL}/api/guardian`)
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/guardian")
+    fetch(`https://content.guardianapis.com/search?show-fields=bodyText&api-key=${import.meta.env.VITE_GUARDIAN_API_KEY}`)
       .then(res => res.json())
       .then(setArticles);
   }, []);
