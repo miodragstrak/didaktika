@@ -1,5 +1,5 @@
-import { useState } from "react";
-import NewsFeed from "./components/NewsFeed";
+import { useCallback, useEffect, useState } from "react";
+import SourcePanel from "./components/SourcePanel";
 import Controls from "./components/Controls";
 import LessonEditor from "./components/LessonEditor";
 import LessonSidebar from "./components/LessonSidebar";
@@ -12,12 +12,48 @@ export default function App() {
   const [lesson, setLesson] = useState("");
   const [level, setLevel] = useState("B1");
   const [savedLessons, setSavedLessons] = useState([]);
+  const [lessonsLoading, setLessonsLoading] = useState(false);
+  const [lessonsError, setLessonsError] = useState("");
   const [loading, setLoading] = useState(false);
 
-function stripHtml(html) {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  return doc.body.textContent || "";
-}
+  const loadLessons = useCallback(async () => {
+    const lessonsUrl = import.meta.env.VITE_GET_LESSONS_URL;
+
+    if (!lessonsUrl) {
+      setLessonsError("Missing VITE_GET_LESSONS_URL");
+      return;
+    }
+
+    try {
+      setLessonsLoading(true);
+      setLessonsError("");
+
+      const res = await fetch(lessonsUrl);
+
+      if (!res.ok) {
+        throw new Error(`Lessons request failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      const lessons = Array.isArray(data) ? data : data.lessons || [];
+
+      setSavedLessons(lessons);
+    } catch (err) {
+      console.error("Error loading lessons:", err);
+      setLessonsError("Could not load lessons");
+    } finally {
+      setLessonsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void Promise.resolve().then(loadLessons);
+  }, [loadLessons]);
+
+  function stripHtml(html) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return doc.body.textContent || "";
+  }
 
 return (
   <div className="page">
@@ -32,7 +68,7 @@ return (
 
       {/* LEFT */}
       <div className="left">
-        <NewsFeed onSelect={setSelectedArticle} />
+        <SourcePanel onSelect={setSelectedArticle} />
       </div>
 
       {/* CENTER */}
@@ -58,14 +94,19 @@ return (
         <ActionBar
           lesson={lesson}
           level={level}
-          setSavedLessons={setSavedLessons}
+          onSaved={loadLessons}
         />
         
       </div>
 
       {/* RIGHT */}
       <div className="right">
-        <LessonSidebar lessons={savedLessons} />
+        <LessonSidebar
+          lessons={savedLessons}
+          loading={lessonsLoading}
+          error={lessonsError}
+          onRefresh={loadLessons}
+        />
       </div>
 
     </div>

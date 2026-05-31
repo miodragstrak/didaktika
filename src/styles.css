@@ -110,6 +110,11 @@ button:hover {
   background: #4f46e5;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .preview {
   background: #020617;
   border: 1px solid #334155;
@@ -164,6 +169,57 @@ textarea {
   background: #1f2937;
 }
 
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.panel-heading h3 {
+  margin: 0;
+}
+
+.ghost-button {
+  background: #111827;
+  border: 1px solid #1f2937;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.ghost-button:hover {
+  background: #1f2937;
+}
+
+.lesson-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.lesson-meta {
+  display: flex;
+  gap: 8px;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.lesson-item small {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+}
+
+.muted,
+.error-text {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.error-text {
+  color: #fca5a5;
+}
+
 .preview {
   background: #111827;
   padding: 12px;
@@ -208,4 +264,48 @@ textarea {
 
 .controls button:last-child {
   margin-left: auto;
+}
+
+.source-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.source-tabs button {
+  flex: 1;
+  background: #111827;
+  border: 1px solid #1f2937;
+}
+
+.source-tabs button.active {
+  background: #6366f1;
+  border-color: #6366f1;
+}
+
+.article small {
+  display: block;
+  margin-top: 6px;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.manual-source {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.manual-source input,
+.manual-source textarea {
+  background: #020617;
+  color: #e5e7eb;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.manual-source textarea {
+  min-height: 220px;
+  resize: vertical;
 }
