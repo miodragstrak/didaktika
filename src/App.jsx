@@ -6,6 +6,7 @@ import LessonSidebar from "./components/LessonSidebar";
 import ActionBar from "./components/ActionBar";
 import "./styles.css";
 import logo from "./assets/logo.png";
+import PublicationManager from "./components/PublicationManager";
 
 export default function App() {
   const [selectedArticle, setSelectedArticle] = useState(null);
@@ -15,9 +16,15 @@ export default function App() {
   const [lessonsLoading, setLessonsLoading] = useState(false);
   const [lessonsError, setLessonsError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [quiz, setQuiz] = useState([]);
+  const [title, setTitle] = useState("");
+  const [quizText, setQuizText] = useState("");
+  const [view, setView] = useState("studio");
 
   const loadLessons = useCallback(async () => {
-    const lessonsUrl = import.meta.env.VITE_GET_LESSONS_URL;
+    const lessonsUrl =
+      `${import.meta.env.VITE_API_URL}/api/get-lessons`;
 
     if (!lessonsUrl) {
       setLessonsError("Missing VITE_GET_LESSONS_URL");
@@ -60,56 +67,175 @@ return (
 
     {/* 🔝 HEADER */}
     <div className="header">
-      <img src={logo} alt="Didakta" />
-    </div>
+        <div className="brand">
+          <img src={logo} alt="Didaktika" />
+        <div>
+          <strong>Didaktika</strong>
+          <span>AI Lesson Studio</span>
+        </div>
+      </div>
 
+    <div className="top-nav">
+      <button
+        className={view === "studio" ? "active" : ""}
+        onClick={() => setView("studio")}
+      >
+        Lesson Studio
+      </button>
+
+      <button
+        className={view === "publication" ? "active" : ""}
+        onClick={() => setView("publication")}
+      >
+        Publication Manager
+      </button>
+    </div>
+    </div>
     {/* 🔽 MAIN APP */}
-    <div className="app">
+    {view === "studio" && (
+      <div className="app">
 
-      {/* LEFT */}
-      <div className="left">
-        <SourcePanel onSelect={setSelectedArticle} />
+        {/* LEFT */}
+        <div className="left">
+          <SourcePanel onSelect={setSelectedArticle} />
+        </div>
+
+        {/* CENTER */}
+        <div className="center">
+
+          <Controls
+            level={level}
+            setLevel={setLevel}
+            article={selectedArticle}
+            setLesson={setLesson}
+            setQuiz={setQuiz}
+            setQuizText={setQuizText}
+            setTitle={setTitle}
+            setLoading={setLoading}
+          />
+
+          {selectedArticle && (
+            <div className="preview">
+              <h4>{selectedArticle.title}</h4>
+              <p>{stripHtml(selectedArticle.content).slice(0, 500)}...</p>
+            </div>
+          )}
+
+          <LessonEditor lesson={lesson} setLesson={setLesson} loading={loading} />
+
+          {title && (
+            <div className="preview">
+              <h3>{title}</h3>
+            </div>
+          )}
+
+          {quiz.length > 0 && (
+            <div className="preview">
+              <h3>Quiz Editor</h3>
+
+              {quiz.map((q, questionIndex) => (
+                <div
+                  key={questionIndex}
+                  style={{
+                    marginBottom: "20px",
+                    padding: "12px",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <label>
+                    <strong>Question {questionIndex + 1}</strong>
+                  </label>
+
+                  <input
+                    type="text"
+                    value={q.question}
+                    onChange={(e) => {
+                      const updated = [...quiz];
+                      updated[questionIndex].question = e.target.value;
+                      setQuiz(updated);
+                    }}
+                    style={{
+                      width: "100%",
+                      marginTop: "8px",
+                      marginBottom: "12px",
+                    }}
+                  />
+
+                  {q.options?.map((option, optionIndex) => (
+                    <input
+                      key={optionIndex}
+                      type="text"
+                      value={option}
+                      onChange={(e) => {
+                        const updated = [...quiz];
+                        updated[questionIndex].options[optionIndex] =
+                          e.target.value;
+                        setQuiz(updated);
+                      }}
+                      style={{
+                        width: "100%",
+                        marginBottom: "8px",
+                      }}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {quizText && (
+            <textarea
+              className="lesson-editor"
+              value={quizText}
+              onChange={(e) => setQuizText(e.target.value)}
+            />
+          )}
+
+          <ActionBar
+            lesson={lesson}
+            level={level}
+            title={title}
+            selectedLesson={selectedLesson}
+            quiz={quiz}
+            onSaved={loadLessons}
+          />
+          
+        </div>
+
+        {/* RIGHT */}
+        <div className="right">
+          <LessonSidebar
+            lessons={savedLessons}
+            loading={lessonsLoading}
+            error={lessonsError}
+            onRefresh={loadLessons}
+            onSelectLesson={(lesson) => {
+              setSelectedLesson(lesson);
+
+              setLesson(lesson.lesson || "");
+              setLevel(lesson.level || "B1");
+              setTitle(lesson.title || "");
+
+              try {
+                setQuiz(
+                  lesson.quiz
+                    ? JSON.parse(lesson.quiz)
+                    : []
+                );
+              } catch {
+                setQuiz([]);
+              }
+            }}
+          />
+        </div>
+
       </div>
+    )}
+    {view === "publication" && <PublicationManager
+  lessons={savedLessons}
+/>}
 
-      {/* CENTER */}
-      <div className="center">
-
-        <Controls
-          level={level}
-          setLevel={setLevel}
-          article={selectedArticle}
-          setLesson={setLesson}
-          setLoading={setLoading}
-        />
-
-        {selectedArticle && (
-          <div className="preview">
-            <h4>{selectedArticle.title}</h4>
-            <p>{stripHtml(selectedArticle.content).slice(0, 500)}...</p>
-          </div>
-        )}
-
-        <LessonEditor lesson={lesson} setLesson={setLesson} loading={loading} />
-
-        <ActionBar
-          lesson={lesson}
-          level={level}
-          onSaved={loadLessons}
-        />
-        
-      </div>
-
-      {/* RIGHT */}
-      <div className="right">
-        <LessonSidebar
-          lessons={savedLessons}
-          loading={lessonsLoading}
-          error={lessonsError}
-          onRefresh={loadLessons}
-        />
-      </div>
-
-    </div>
   </div>
-);
+  );
 }

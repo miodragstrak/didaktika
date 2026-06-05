@@ -1,6 +1,15 @@
-export default function Controls({ level, setLevel, article, setLesson, setLoading }) {
+export default function Controls({
+  level,
+  setLevel,
+  article,
+  setLesson,
+  setQuiz,
+  setTitle,
+  setLoading
+}) {
 
   const levels = ["B1", "B2", "C1", "C2"];
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
   const generateLesson = async () => {
     if (!article) {
@@ -11,7 +20,10 @@ export default function Controls({ level, setLevel, article, setLesson, setLoadi
     try {
       setLoading(true);
 
-      const res = await fetch(import.meta.env.VITE_N8N_WEBHOOK_URL, {
+      console.log("GENERATE CLICKED");
+    console.log("API_URL =", API_URL);
+
+      const res = await fetch(`${API_URL}/api/generate-lesson`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -22,8 +34,19 @@ export default function Controls({ level, setLevel, article, setLesson, setLoadi
         })
       });
 
-      const text = await res.text();
-      setLesson(text);
+      console.log("FETCH SENT");
+
+      if (!res.ok) {
+        throw new Error(`Generate lesson failed: ${res.status} ${res.statusText}`);
+      }
+
+      const data = await res.json();
+
+      console.log("Generated lesson:", data);
+
+      setTitle(data.title || "");
+      setLesson(data.lesson || "");
+      setQuiz(data.quiz || []);
 
     } catch (err) {
       console.error(err);

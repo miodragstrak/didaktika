@@ -1,4 +1,10 @@
-export default function LessonSidebar({ lessons, loading, error, onRefresh }) {
+export default function LessonSidebar({
+  lessons,
+  loading,
+  error,
+  onRefresh,
+  onSelectLesson
+}) {
   return (
     <div className="panel">
       <div className="panel-heading">
@@ -19,7 +25,12 @@ export default function LessonSidebar({ lessons, loading, error, onRefresh }) {
       {!loading &&
         !error &&
         lessons.map((l, index) => (
-          <div key={l.lesson_id || `${l.title}-${index}`} className="lesson-item">
+          <div
+            key={l.lesson_id || `${l.title}-${index}`}
+            className="lesson-item"
+            onClick={() => onSelectLesson && onSelectLesson(l)}
+            style={{ cursor: "pointer" }}
+          >
             <div className="lesson-title">{l.title || "Untitled"}</div>
             <div className="lesson-meta">
               <span>{l.level || "No level"}</span>
