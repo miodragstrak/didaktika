@@ -9,7 +9,6 @@ export default function Controls({
 }) {
 
   const levels = ["B1", "B2", "C1", "C2"];
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
   const generateLesson = async () => {
     if (!article) {
@@ -20,10 +19,7 @@ export default function Controls({
     try {
       setLoading(true);
 
-      console.log("GENERATE CLICKED");
-    console.log("API_URL =", API_URL);
-
-      const res = await fetch(import.meta.env.N8N_WEBHOOK_URL, {
+      const res = await fetch(import.meta.env.VITE_N8N_WEBHOOK_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
