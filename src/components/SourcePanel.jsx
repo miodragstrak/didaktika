@@ -7,33 +7,48 @@ export default function SourcePanel({ onSelect }) {
   const [manualContent, setManualContent] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+
+
+useEffect(() => {
   async function loadNews() {
     try {
       setLoading(true);
 
-      console.log(
-  "VITE_GUARDIAN_NEWS_URL =",
-  import.meta.env.VITE_GUARDIAN_NEWS_URL
-);
-
-      const res = await fetch(import.meta.env.VITE_GUARDIAN_NEWS_URL);
+      const res = await fetch(
+        import.meta.env.VITE_GUARDIAN_NEWS_URL
+      );
 
       if (!res.ok) {
-        throw new Error(`News request failed (${res.status})`);
+        throw new Error(
+          `News request failed (${res.status})`
+        );
       }
 
       const data = await res.json();
 
-      const normalized = data.map((item, index) => ({
+      const items = Array.isArray(data)
+        ? data[0]?.response?.results || []
+        : data.response?.results ||
+          data.articles ||
+          data.data ||
+          [];
+
+      const normalized = items.map((item, index) => ({
         id: item.id || `guardian-${index}`,
-        title: item.title,
-        source: "Guardian",
-        content: item.content,
-        createdAt: new Date().toISOString(),
+        title: item.webTitle || item.title || "Untitled",
+        source: item.sectionName || "Guardian",
+        content:
+          item.fields?.bodyText ||
+          item.fields?.trailText ||
+          item.webTitle ||
+          "",
+        createdAt:
+          item.webPublicationDate ||
+          new Date().toISOString(),
       }));
 
       setArticles(normalized);
+
     } catch (err) {
       console.error("Error loading news:", err);
     } finally {
