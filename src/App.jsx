@@ -119,6 +119,7 @@ return (
             setQuizText={setQuizText}
             setTitle={setTitle}
             setLoading={setLoading}
+            lessonId={selectedLesson?.lesson_id}
           />
 
           {selectedArticle && (
