@@ -13,7 +13,7 @@ const [testEmail, setTestEmail] = useState("");
 
 const sendTestEmail = async () => {
   await fetch(
-  `${import.meta.env.VITE_API_URL}/api/send-test-email`,
+    import.meta.env.VITE_SEND_TEST_EMAIL_URL,
     {
       method: "POST",
       headers: {
