@@ -12,6 +12,12 @@ export default function SourcePanel({ onSelect }) {
     try {
       setLoading(true);
 
+      const res = await fetch(import.meta.env.VITE_GUARDIAN_NEWS_URL);
+
+      if (!res.ok) {
+        throw new Error(`News request failed (${res.status})`);
+      }
+
       const data = await res.json();
 
       const normalized = data.map((item, index) => ({
@@ -31,7 +37,7 @@ export default function SourcePanel({ onSelect }) {
   }
 
   loadNews();
-}, [API_URL]);
+}, []);
 
   const useManualSource = () => {
     if (!manualTitle.trim() || !manualContent.trim()) {
