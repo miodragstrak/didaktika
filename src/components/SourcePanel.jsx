@@ -7,14 +7,11 @@ export default function SourcePanel({ onSelect }) {
   const [manualContent, setManualContent] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-
   useEffect(() => {
   async function loadNews() {
     try {
       setLoading(true);
 
-      const res = await fetch(import.meta.env.GUARDIAN_API_KEY);
       const data = await res.json();
 
       const normalized = data.map((item, index) => ({
