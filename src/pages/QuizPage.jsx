@@ -15,20 +15,33 @@ export default function QuizPage() {
       const lessonId =
         params.get("lesson_id");
 
-      const res = await fetch(
-        `${import.meta.env.VITE_GET_LESSON_BY_ID_URL}?lesson_id=${lessonId}`
-      );
+    console.log(
+  "LESSON URL:",
+  `${import.meta.env.VITE_GET_LESSON_BY_ID_URL}?lesson_id=${lessonId}`
+);
 
-      const data = await res.json();
+      const url =
+  `${import.meta.env.VITE_GET_LESSON_BY_ID_URL}?lesson_id=${lessonId}`;
 
-      setTitle(data.title);
+console.log("LESSON URL:", url);
+
+const res = await fetch(url);
+
+console.log("STATUS:", res.status);
+
+const text = await res.text();
+
+console.log("RAW RESPONSE:");
+console.log(text);
+
+    /*  setTitle(data.title);
 
       const parsedQuiz =
         typeof data.quiz === "string"
           ? JSON.parse(data.quiz)
           : data.quiz;
 
-      setQuiz(parsedQuiz);
+      setQuiz(parsedQuiz); */
     }
 
     loadQuiz();
