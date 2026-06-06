@@ -23,7 +23,7 @@ export default function Controls({
       console.log("GENERATE CLICKED");
     console.log("API_URL =", API_URL);
 
-      const res = await fetch(`${API_URL}/api/generate-lesson`, {
+      const res = await fetch(import.meta.env.N8N_WEBHOOK_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

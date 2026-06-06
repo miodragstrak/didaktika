@@ -14,7 +14,7 @@ export default function SourcePanel({ onSelect }) {
     try {
       setLoading(true);
 
-      const res = await fetch(`${API_URL}/api/guardian`);
+      const res = await fetch(import.meta.env.GUARDIAN_API_KEY);
       const data = await res.json();
 
       const normalized = data.map((item, index) => ({
