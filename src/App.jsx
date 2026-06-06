@@ -7,6 +7,7 @@ import ActionBar from "./components/ActionBar";
 import "./styles.css";
 import logo from "./assets/logo.png";
 import PublicationManager from "./components/PublicationManager";
+import QuizPage from "./pages/QuizPage";
 
 export default function App() {
   const [selectedArticle, setSelectedArticle] = useState(null);
@@ -21,6 +22,12 @@ export default function App() {
   const [title, setTitle] = useState("");
   const [quizText, setQuizText] = useState("");
   const [view, setView] = useState("studio");
+
+  const isQuizPage = window.location.pathname === "/quiz";
+
+    if (isQuizPage) {
+      return <QuizPage />;
+    }
 
   const loadLessons = useCallback(async () => {
     const lessonsUrl =
@@ -198,6 +205,7 @@ return (
             title={title}
             selectedLesson={selectedLesson}
             quiz={quiz}
+            lessonId={selectedLesson?.lesson_id}
             onSaved={loadLessons}
           />
           

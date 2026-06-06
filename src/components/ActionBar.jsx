@@ -5,6 +5,7 @@ export default function ActionBar({
   level,
   title,
   quiz,
+  lessonId,
   onSaved,
 }) {
 
@@ -19,6 +20,7 @@ const sendTestEmail = async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        lesson_id: lessonId,
         email: testEmail,
         title,
         lesson,
@@ -70,7 +72,7 @@ const handleRecord = () => {
 };
 
 const handlePublish = async () => {
-  if (!title?.lesson_id) {
+  if (!lessonId) {
     alert("Please select a saved lesson first.");
     return;
   }
@@ -83,7 +85,7 @@ const handlePublish = async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        lesson_id: title.lesson_id,
+        lesson_id: lessonId,
       }),
     }
   );
@@ -105,7 +107,7 @@ const handlePublish = async () => {
       <button onClick={handleRecord}>Record</button>
       <button
         onClick={handlePublish}
-        disabled={!title?.lesson_id}
+        disabled={!lessonId}
       >
         Publish
       </button>
