@@ -26,12 +26,16 @@ useEffect(() => {
 
       const data = await res.json();
 
+      console.log("NEWS DATA:");
+      console.log(data);
+      console.log("IS ARRAY:", Array.isArray(data));
+      console.log("COUNT:", data.length);
+
       const items = Array.isArray(data)
-        ? data[0]?.response?.results || []
-        : data.response?.results ||
-          data.articles ||
-          data.data ||
-          [];
+        ? data
+        : data.articles || [];
+
+      console.log("ITEMS:", items.length);
 
       const normalized = items.map((item, index) => ({
         id: item.id || `guardian-${index}`,
