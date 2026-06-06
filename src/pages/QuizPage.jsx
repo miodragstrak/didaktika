@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 
 export default function QuizPage() {
 
-  const [quiz, setQuiz] = useState([]);
-  const [title, setTitle] = useState("");
+    const [quiz, setQuiz] = useState([]);
+    const [title, setTitle] = useState("");
+    const [answers, setAnswers] = useState({});
+    const [score, setScore] = useState(null);
 
 useEffect(() => {
 
@@ -30,40 +32,104 @@ useEffect(() => {
         : data.quiz;
 
     setQuiz(parsedQuiz);
+    
   }
 
   loadQuiz();
 
 }, []);
 
-  return (
-    <div className="quiz-page">
+const submitQuiz = () => {
 
+  let correct = 0;
+
+  quiz.forEach((q, index) => {
+
+    if (
+      answers[index] === q.correct
+    ) {
+      correct++;
+    }
+
+  });
+
+  setScore(correct);
+};
+
+return (
+  <div className="quiz-page">
+
+    <div className="quiz-header">
       <h1>{title}</h1>
+    </div>
 
-      {quiz.map((q, index) => (
-        <div key={index}>
+    {quiz.map((q, index) => (
+      <div
+        key={index}
+        className="quiz-card"
+      >
 
-          <h3>
-            Question {index + 1}
-          </h3>
+        <h2>
+          Question {index + 1}
+        </h2>
 
-          <p>{q.question}</p>
+        <p className="question-text">
+          {q.question}
+        </p>
+
+        <div className="options">
 
           {q.options.map((option, i) => (
-            <label key={i}>
+            <label
+              key={i}
+              className="option"
+            >
               <input
                 type="radio"
                 name={`q-${index}`}
                 value={i}
+                checked={answers[index] === i}
+                onChange={() =>
+                  setAnswers({
+                    ...answers,
+                    [index]: i,
+                  })
+                }
               />
+
               {option}
+
             </label>
           ))}
 
         </div>
-      ))}
 
-    </div>
-  );
+      </div>
+    ))}
+
+    <button
+    className="submit-btn"
+        onClick={submitQuiz}
+    >
+        Submit Quiz
+    </button>
+
+    {score !== null && (
+  <div className="quiz-result">
+
+    <h2>
+      Score: {score}/{quiz.length}
+    </h2>
+
+    <p>
+      {Math.round(
+        (score / quiz.length) * 100
+      )}%
+    </p>
+
+  </div>
+)}
+
+  </div>
+);
 }
