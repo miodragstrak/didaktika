@@ -23,12 +23,6 @@ export default function App() {
   const [quizText, setQuizText] = useState("");
   const [view, setView] = useState("studio");
 
-  const isQuizPage = window.location.pathname === "/quiz";
-
-    if (isQuizPage) {
-      return <QuizPage />;
-    }
-
   const loadLessons = useCallback(async () => {
     const lessonsUrl =
       import.meta.env.VITE_GET_LESSONS_URL;
@@ -68,6 +62,12 @@ export default function App() {
     const doc = new DOMParser().parseFromString(html, "text/html");
     return doc.body.textContent || "";
   }
+
+  const isQuizPage = window.location.pathname === "/quiz";
+
+    if (isQuizPage) {
+      return <QuizPage />;
+    }  
 
 return (
   <div className="page">
