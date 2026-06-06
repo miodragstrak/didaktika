@@ -97,3 +97,29 @@ app.get("/api/get-lessons", async (req, res) => {
     });
   }
 });
+
+// SEND TEST EMAIL
+app.post("/api/send-test-email", async (req, res) => {
+  try {
+
+    const response = await fetch(
+      process.env.VITE_SEND_TEST_EMAIL_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(req.body),
+      }
+    );
+
+    const data = await response.text();
+
+    res.send(data);
+
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+});

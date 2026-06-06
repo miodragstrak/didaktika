@@ -7,8 +7,6 @@ export default function SourcePanel({ onSelect }) {
   const [manualContent, setManualContent] = useState("");
   const [loading, setLoading] = useState(false);
 
-
-
 useEffect(() => {
   async function loadNews() {
     try {
@@ -25,11 +23,6 @@ useEffect(() => {
       }
 
       const data = await res.json();
-
-      console.log("NEWS DATA:");
-      console.log(data);
-      console.log("IS ARRAY:", Array.isArray(data));
-      console.log("COUNT:", data.length);
 
       const items = Array.isArray(data)
         ? data

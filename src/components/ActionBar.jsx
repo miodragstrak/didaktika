@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 export default function ActionBar({
   lesson,
   level,
@@ -5,6 +7,29 @@ export default function ActionBar({
   quiz,
   onSaved,
 }) {
+
+const [testEmail, setTestEmail] = useState("");
+
+const sendTestEmail = async () => {
+  await fetch(
+  `${import.meta.env.VITE_API_URL}/api/send-test-email`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: testEmail,
+        title,
+        lesson,
+        quiz,
+        level,
+      }),
+    }
+  );
+
+  alert("Test email sent");
+};
 
 const saveLesson = async () => {
   if (!lesson) return;
@@ -83,6 +108,17 @@ const handlePublish = async () => {
         disabled={!title?.lesson_id}
       >
         Publish
+      </button>
+
+      <input
+        type="email"
+        placeholder="student@example.com"
+        value={testEmail}
+        onChange={(e) => setTestEmail(e.target.value)}
+      />
+
+      <button onClick={sendTestEmail}>
+        Send Test Email
       </button>
     </div>
   );
