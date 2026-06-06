@@ -24,7 +24,7 @@ export default function App() {
 
   const loadLessons = useCallback(async () => {
     const lessonsUrl =
-      `${import.meta.env.VITE_API_URL}/api/get-lessons`;
+      import.meta.env.VITE_GET_LESSONS_URL;
 
     if (!lessonsUrl) {
       setLessonsError("Missing VITE_GET_LESSONS_URL");
