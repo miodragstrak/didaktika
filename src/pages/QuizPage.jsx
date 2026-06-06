@@ -5,48 +5,36 @@ export default function QuizPage() {
   const [quiz, setQuiz] = useState([]);
   const [title, setTitle] = useState("");
 
-  useEffect(() => {
+useEffect(() => {
 
-    async function loadQuiz() {
+  async function loadQuiz() {
 
-      const params =
-        new URLSearchParams(window.location.search);
+    const params =
+      new URLSearchParams(window.location.search);
 
-      const lessonId =
-        params.get("lesson_id");
+    const lessonId =
+      params.get("lesson_id");
 
-    console.log(
-  "LESSON URL:",
-  `${import.meta.env.VITE_GET_LESSON_BY_ID_URL}?lesson_id=${lessonId}`
-);
+    const url =
+      `${import.meta.env.VITE_GET_LESSON_BY_ID_URL}?lesson_id=${lessonId}`;
 
-      const url =
-  `${import.meta.env.VITE_GET_LESSON_BY_ID_URL}?lesson_id=${lessonId}`;
+    const res = await fetch(url);
 
-console.log("LESSON URL:", url);
+    const data = await res.json();
 
-const res = await fetch(url);
+    setTitle(data.title);
 
-console.log("STATUS:", res.status);
+    const parsedQuiz =
+      typeof data.quiz === "string"
+        ? JSON.parse(data.quiz)
+        : data.quiz;
 
-const text = await res.text();
+    setQuiz(parsedQuiz);
+  }
 
-console.log("RAW RESPONSE:");
-console.log(text);
+  loadQuiz();
 
-    /*  setTitle(data.title);
-
-      const parsedQuiz =
-        typeof data.quiz === "string"
-          ? JSON.parse(data.quiz)
-          : data.quiz;
-
-      setQuiz(parsedQuiz); */
-    }
-
-    loadQuiz();
-
-  }, []);
+}, []);
 
   return (
     <div className="quiz-page">
