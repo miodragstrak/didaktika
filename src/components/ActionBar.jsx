@@ -12,7 +12,12 @@ export default function ActionBar({
 const [testEmail, setTestEmail] = useState("");
 
 const sendTestEmail = async () => {
-  await fetch(
+  console.log(
+    "EMAIL URL:",
+    import.meta.env.VITE_SEND_TEST_EMAIL_URL
+  );
+
+  const res = await fetch(
     import.meta.env.VITE_SEND_TEST_EMAIL_URL,
     {
       method: "POST",
@@ -29,6 +34,18 @@ const sendTestEmail = async () => {
       }),
     }
   );
+
+  console.log("EMAIL STATUS:", res.status);
+
+  const text = await res.text();
+
+  console.log("EMAIL RESPONSE:");
+  console.log(text);
+
+  if (!res.ok) {
+    alert(`Email failed (${res.status})`);
+    return;
+  }
 
   alert("Test email sent");
 };
