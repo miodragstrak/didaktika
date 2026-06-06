@@ -12,6 +12,11 @@ export default function SourcePanel({ onSelect }) {
     try {
       setLoading(true);
 
+      console.log(
+  "VITE_GUARDIAN_NEWS_URL =",
+  import.meta.env.VITE_GUARDIAN_NEWS_URL
+);
+
       const res = await fetch(import.meta.env.VITE_GUARDIAN_NEWS_URL);
 
       if (!res.ok) {
