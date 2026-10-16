@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function SourcePanel({ onSelect }) {
+export default function SourcePanel({ onSelect, selectedArticle }) {
   const [mode, setMode] = useState("news");
   const [articles, setArticles] = useState([]);
   const [manualTitle, setManualTitle] = useState("");
@@ -37,6 +37,7 @@ useEffect(() => {
         content:
           item.fields?.bodyText ||
           item.fields?.trailText ||
+          item.content ||
           item.webTitle ||
           "",
         createdAt:
@@ -73,11 +74,12 @@ useEffect(() => {
 
   return (
     <div className="panel">
-      <h3>Sources</h3>
+      <h3>1 Choose source content</h3>
 
       <div className="source-tabs">
         <button
           className={mode === "news" ? "active" : ""}
+          aria-pressed={mode === "news"}
           onClick={() => setMode("news")}
         >
           News
@@ -85,9 +87,10 @@ useEffect(() => {
 
         <button
           className={mode === "manual" ? "active" : ""}
+          aria-pressed={mode === "manual"}
           onClick={() => setMode("manual")}
         >
-          Manual
+          Paste your content
         </button>
       </div>
 
@@ -97,14 +100,16 @@ useEffect(() => {
 
           {!loading &&
             articles.map((article) => (
-              <div
+              <button
+                type="button"
                 key={article.id}
-                className="article"
+                className={`article ${selectedArticle?.id === article.id ? "selected" : ""}`}
+                aria-pressed={selectedArticle?.id === article.id}
                 onClick={() => onSelect(article)}
               >
                 <strong>{article.title}</strong>
                 <small>{article.source}</small>
-              </div>
+              </button>
             ))}
         </>
       )}
@@ -112,12 +117,14 @@ useEffect(() => {
       {mode === "manual" && (
         <div className="manual-source">
           <input
+            aria-label="Source title"
             value={manualTitle}
             onChange={(e) => setManualTitle(e.target.value)}
             placeholder="Lesson topic / title"
           />
 
           <textarea
+            aria-label="Source content"
             value={manualContent}
             onChange={(e) => setManualContent(e.target.value)}
             placeholder="Paste text, idea, topic, article, transcript..."

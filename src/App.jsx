@@ -18,6 +18,7 @@ export default function App() {
   const [lessonsError, setLessonsError] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
+  const [activeLessonId, setActiveLessonId] = useState();
   const [quiz, setQuiz] = useState([]);
   const [title, setTitle] = useState("");
   const [quizText, setQuizText] = useState("");
@@ -55,7 +56,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    void Promise.resolve().then(loadLessons);
+    if (window.location.pathname !== "/quiz") {
+      void Promise.resolve().then(loadLessons);
+    }
   }, [loadLessons]);
 
   function stripHtml(html) {
@@ -73,18 +76,20 @@ return (
   <div className="page">
 
     {/* 🔝 HEADER */}
-    <div className="header">
+    <header className="header">
         <div className="brand">
           <img src={logo} alt="Didaktika" />
         <div>
           <strong>Didaktika</strong>
-          <span>AI Lesson Studio</span>
+          <span>Didaktika Lab</span>
         </div>
       </div>
+      <span className="poc-badge">Proof of Concept</span>
 
-    <div className="top-nav">
+    <nav className="top-nav" aria-label="Workspace">
       <button
         className={view === "studio" ? "active" : ""}
+        aria-pressed={view === "studio"}
         onClick={() => setView("studio")}
       >
         Lesson Studio
@@ -92,19 +97,43 @@ return (
 
       <button
         className={view === "publication" ? "active" : ""}
+        aria-pressed={view === "publication"}
         onClick={() => setView("publication")}
       >
         Publication Manager
       </button>
-    </div>
-    </div>
+    </nav>
+    </header>
+
+    <section className="introduction" aria-labelledby="intro-title">
+      <h1 id="intro-title">AI-assisted lesson creation with teacher control</h1>
+      <p>
+        Transform source content into CEFR-adapted lessons, review AI-generated
+        materials and connect them with assessment activities.
+      </p>
+      <p className="model-description">
+        The English lesson is the first demonstration of a reusable Didaktika
+        model based on learning outcomes, structured activities, assessment and
+        expert review. The same process can be adapted to other courses and
+        subject areas.
+      </p>
+    </section>
+
+    <ol className="process-stepper" aria-label="Lesson creation process">
+      {["Source", "Learning settings", "AI generation", "Teacher review", "Publish and assess"].map((step, index) => (
+        <li key={step}>
+          <span className="step-number" aria-hidden="true">{index + 1}</span>
+          <span>{step}</span>
+        </li>
+      ))}
+    </ol>
     {/* 🔽 MAIN APP */}
     {view === "studio" && (
       <div className="app">
 
         {/* LEFT */}
         <div className="left">
-          <SourcePanel onSelect={setSelectedArticle} />
+          <SourcePanel onSelect={setSelectedArticle} selectedArticle={selectedArticle} />
         </div>
 
         {/* CENTER */}
@@ -119,7 +148,11 @@ return (
             setQuizText={setQuizText}
             setTitle={setTitle}
             setLoading={setLoading}
-            lessonId={selectedLesson?.lesson_id}
+            loading={loading}
+            onGenerated={() => {
+              setActiveLessonId(undefined);
+              setSelectedLesson(null);
+            }}
           />
 
           {selectedArticle && (
@@ -127,6 +160,23 @@ return (
               <h4>{selectedArticle.title}</h4>
               <p>{stripHtml(selectedArticle.content).slice(0, 500)}...</p>
             </div>
+          )}
+
+          {lesson && (
+            <section className="teacher-review" aria-labelledby="review-title">
+              <h2 id="review-title">Teacher review</h2>
+              <p>Review and edit the AI-generated lesson and assessment before publishing.</p>
+              <ol className="review-status" aria-label="Review and approval stages">
+                <li aria-current={selectedLesson?.status !== "published" ? "step" : undefined}>AI Draft</li>
+                <li>Teacher Reviewed</li>
+                <li aria-current={selectedLesson?.status === "published" ? "step" : undefined}>Approved</li>
+              </ol>
+              <p className="muted">
+                {selectedLesson?.status === "published"
+                  ? "Saved status: published."
+                  : "AI draft. Teacher review is required before approval."}
+              </p>
+            </section>
           )}
 
           <LessonEditor lesson={lesson} setLesson={setLesson} loading={loading} />
@@ -138,18 +188,13 @@ return (
           )}
 
           {quiz.length > 0 && (
-            <div className="preview">
+            <div className="quiz-editor">
               <h3>Quiz Editor</h3>
 
               {quiz.map((q, questionIndex) => (
                 <div
                   key={questionIndex}
-                  style={{
-                    marginBottom: "20px",
-                    padding: "12px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                  }}
+                  className="quiz-editor-question"
                 >
                   <label>
                     <strong>Question {questionIndex + 1}</strong>
@@ -157,16 +202,12 @@ return (
 
                   <input
                     type="text"
+                    aria-label={`Question ${questionIndex + 1}`}
                     value={q.question}
                     onChange={(e) => {
                       const updated = [...quiz];
                       updated[questionIndex].question = e.target.value;
                       setQuiz(updated);
-                    }}
-                    style={{
-                      width: "100%",
-                      marginTop: "8px",
-                      marginBottom: "12px",
                     }}
                   />
 
@@ -174,16 +215,13 @@ return (
                     <input
                       key={optionIndex}
                       type="text"
+                      aria-label={`Question ${questionIndex + 1}, option ${optionIndex + 1}`}
                       value={option}
                       onChange={(e) => {
                         const updated = [...quiz];
                         updated[questionIndex].options[optionIndex] =
                           e.target.value;
                         setQuiz(updated);
-                      }}
-                      style={{
-                        width: "100%",
-                        marginBottom: "8px",
                       }}
                     />
                   ))}
@@ -204,10 +242,26 @@ return (
             lesson={lesson}
             level={level}
             title={title}
-            selectedLesson={selectedLesson}
             quiz={quiz}
-            lessonId={selectedLesson?.lesson_id}
-            onSaved={loadLessons}
+            activeLessonId={activeLessonId}
+            onSaved={async (savedLesson) => {
+              setActiveLessonId(savedLesson.lesson_id);
+              setSelectedLesson(savedLesson);
+              await loadLessons();
+            }}
+            onPublished={async (publishedLessonId) => {
+              setSelectedLesson((previous) => (
+                previous?.lesson_id === publishedLessonId
+                  ? { ...previous, status: "published" }
+                  : previous
+              ));
+              setSavedLessons((previous) => previous.map((savedLesson) => (
+                savedLesson.lesson_id === publishedLessonId
+                  ? { ...savedLesson, status: "published" }
+                  : savedLesson
+              )));
+              await loadLessons();
+            }}
           />
           
         </div>
@@ -220,6 +274,7 @@ return (
             error={lessonsError}
             onRefresh={loadLessons}
             onSelectLesson={(lesson) => {
+              setActiveLessonId(lesson.lesson_id);
               setSelectedLesson(lesson);
 
               setLesson(lesson.lesson || "");

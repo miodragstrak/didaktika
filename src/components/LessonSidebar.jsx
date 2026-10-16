@@ -25,21 +25,21 @@ export default function LessonSidebar({
       {!loading &&
         !error &&
         lessons.map((l, index) => (
-          <div
+          <button
+            type="button"
             key={l.lesson_id || `${l.title}-${index}`}
             className="lesson-item"
             onClick={() => onSelectLesson && onSelectLesson(l)}
-            style={{ cursor: "pointer" }}
           >
-            <div className="lesson-title">{l.title || "Untitled"}</div>
-            <div className="lesson-meta">
+            <span className="lesson-title">{l.title || "Untitled"}</span>
+            <span className="lesson-meta">
               <span>{l.level || "No level"}</span>
               <span>{l.status || "draft"}</span>
-            </div>
+            </span>
             {l.created_at && (
               <small>{new Date(l.created_at).toLocaleDateString()}</small>
             )}
-          </div>
+          </button>
         ))}
     </div>
   );

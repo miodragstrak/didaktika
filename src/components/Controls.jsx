@@ -1,3 +1,5 @@
+import { CEFR_LEVELS } from "../constants";
+
 export default function Controls({
   level,
   setLevel,
@@ -5,10 +7,10 @@ export default function Controls({
   setLesson,
   setQuiz,
   setTitle,
-  setLoading
+  setLoading,
+  loading,
+  onGenerated,
 }) {
-
-  const levels = ["B1", "B2", "C1", "C2"];
 
   const generateLesson = async () => {
     if (!article) {
@@ -43,6 +45,7 @@ export default function Controls({
       setTitle(data.title || "");
       setLesson(data.lesson || "");
       setQuiz(data.quiz || []);
+      onGenerated?.();
 
     } catch (err) {
       console.error(err);
@@ -53,15 +56,16 @@ export default function Controls({
   };
 
   return (
-    <div className="controls">
+    <div className="controls" aria-busy={loading}>
 
       <div className="level-buttons">
-        <span className="label">Izaberi nivo:</span>
+        <span className="label">2 Choose CEFR level:</span>
 
-        {levels.map(l => (
+        {CEFR_LEVELS.map(l => (
           <button
             key={l}
             className={`level-btn ${level === l ? "active" : ""}`}
+            aria-pressed={level === l}
             onClick={() => setLevel(l)}
           >
             {l}
@@ -69,8 +73,8 @@ export default function Controls({
         ))}
       </div>
 
-      <button onClick={generateLesson}>
-        Generate
+      <button onClick={generateLesson} disabled={!article || loading}>
+        {loading ? "Generating lesson..." : "3 Generate lesson"}
       </button>
 
     </div>

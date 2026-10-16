@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CEFR_LEVELS } from "../constants";
 
 export default function PublicationManager({
   lessons = []
@@ -21,7 +22,7 @@ export default function PublicationManager({
     "Friday",
   ];
 
-  const levels = ["B1", "B2", "C1", "C2"];
+  const levels = CEFR_LEVELS;
 
   const saveSchedule = async () => {
 
@@ -33,7 +34,7 @@ export default function PublicationManager({
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            week: "2026-W23",
+            week: "2026-W23", // Retained for compatibility with the existing webhook.
             schedule,
         }),
         }
@@ -49,7 +50,7 @@ export default function PublicationManager({
 
   return (
     <div className="publication-manager">
-      <h2>Next Week Schedule</h2>
+      <h2>Demo Publication Schedule</h2>
 
       <h3>Available Lessons</h3>
 
@@ -63,16 +64,17 @@ export default function PublicationManager({
 
         <div className="schedule-summary">
         <div>Lessons: {lessons.length}</div>
-        <div>Selected: {Object.keys(schedule).length}/20</div>
-        <div>Week: 2026-W23</div>
+        <div>Selected: {Object.values(schedule).filter(Boolean).length}/{days.length * levels.length}</div>
+        <div>Proof of Concept</div>
         </div>
 
+      <div className="schedule-scroll" role="region" aria-label="Demo publication schedule" tabIndex={0}>
       <table className="schedule-table">
         <thead>
           <tr>
-            <th>Day</th>
+            <th scope="col">Day</th>
             {levels.map(level => (
-              <th key={level}>{level}</th>
+              <th key={level} scope="col">{level}</th>
             ))}
           </tr>
         </thead>
@@ -80,13 +82,14 @@ export default function PublicationManager({
         <tbody>
           {days.map(day => (
             <tr key={day}>
-              <td>{day}</td>
+              <th scope="row">{day}</th>
 
               {levels.map(level => (
                 <td key={`${day}-${level}`}>
 
                     <select
                         className="schedule-select"
+                        aria-label={`${day} ${level} lesson`}
                         value={schedule[`${day}-${level}`] || ""}
                         onChange={(e) =>
                         handleChange(day, level, e.target.value)
@@ -114,6 +117,7 @@ export default function PublicationManager({
           ))}
         </tbody>
         </table>
+        </div>
         <button className="primary-button" onClick={saveSchedule}>
             Save Schedule
         </button>

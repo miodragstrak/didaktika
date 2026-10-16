@@ -5,140 +5,154 @@ export default function ActionBar({
   level,
   title,
   quiz,
-  lessonId,
+  activeLessonId,
   onSaved,
+  onPublished,
 }) {
+  const [testEmail, setTestEmail] = useState("");
+  const [publishing, setPublishing] = useState(false);
 
-const [testEmail, setTestEmail] = useState("");
+  const sendTestEmail = async (event) => {
+    event.preventDefault();
 
-const sendTestEmail = async () => {
-  console.log(
-    "EMAIL URL:",
-    import.meta.env.VITE_SEND_TEST_EMAIL_URL
-  );
-
-  const res = await fetch(
-    import.meta.env.VITE_SEND_TEST_EMAIL_URL,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        lesson_id: lessonId,
-        email: testEmail,
-        title,
-        lesson,
-        quiz,
-        level,
-      }),
+    if (!testEmail.trim()) {
+      alert("Please enter a learner email address.");
+      return;
     }
-  );
 
-  console.log("EMAIL STATUS:", res.status);
+    try {
+      const res = await fetch(import.meta.env.VITE_SEND_TEST_EMAIL_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lesson_id: activeLessonId,
+          email: testEmail,
+          title,
+          lesson,
+          quiz,
+          level,
+        }),
+      });
 
-  const text = await res.text();
+      if (!res.ok) {
+        alert(`Email failed (${res.status})`);
+        return;
+      }
 
-  console.log("EMAIL RESPONSE:");
-  console.log(text);
+      alert("Learner preview sent");
+    } catch (err) {
+      console.error("Error sending learner preview:", err);
+      alert("Failed to send learner preview");
+    }
+  };
 
-  if (!res.ok) {
-    alert(`Email failed (${res.status})`);
-    return;
-  }
+  const saveLesson = async () => {
+    if (!lesson) return;
 
-  alert("Test email sent");
-};
-
-const saveLesson = async () => {
-  if (!lesson) return;
-
-  const lessonTitle =
-    title ||
-    lesson.split("\n")[0].replace(/#/g, "").trim();
-  const lessonId = crypto.randomUUID();
-  const createdAt = new Date().toISOString();
-
-  const res = await fetch(import.meta.env.VITE_SAVE_LESSON_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      lesson_id: lessonId,
+    const newLessonId = crypto.randomUUID();
+    const savedLesson = {
+      lesson_id: newLessonId,
       level,
-      title: lessonTitle,
+      title: title || lesson.split("\n")[0].replace(/#/g, "").trim(),
       lesson,
-      quiz:JSON.stringify(quiz),
+      quiz: JSON.stringify(quiz),
       status: "draft",
-      created_at: createdAt,
-    }),
-  });
+      created_at: new Date().toISOString(),
+    };
 
-  if (!res.ok) {
-    alert("Failed to save lesson");
-    return;
-  }
+    try {
+      const res = await fetch(import.meta.env.VITE_SAVE_LESSON_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(savedLesson),
+      });
 
-  await onSaved?.();
-  alert("Lesson saved");
-};
+      if (!res.ok) {
+        alert("Failed to save lesson");
+        return;
+      }
 
-const handleRecord = () => {
-  alert("Recording started (MVP)");
-};
-
-const handlePublish = async () => {
-  if (!lessonId) {
-    alert("Please select a saved lesson first.");
-    return;
-  }
-
-  const res = await fetch(
-    import.meta.env.VITE_PUBLISH_LESSON_URL,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        lesson_id: lessonId,
-      }),
+      await onSaved?.(savedLesson);
+      alert("Lesson saved");
+    } catch (err) {
+      console.error("Error saving lesson:", err);
+      alert("Failed to save lesson");
     }
-  );
+  };
 
-  if (!res.ok) {
-    alert("Failed to publish lesson");
-    return;
-  }
+  const handlePublish = async () => {
+    if (!activeLessonId) {
+      alert("Cannot publish: no active lesson ID. Save an AI draft or select a saved lesson first.");
+      return;
+    }
 
-  await onSaved?.();
+    const publishUrl = import.meta.env.VITE_PUBLISH_LESSON_URL;
+    if (!publishUrl?.trim()) {
+      alert("Cannot publish: VITE_PUBLISH_LESSON_URL is not configured. Configure it and rebuild the app.");
+      return;
+    }
 
-  alert("Lesson published 🚀");
-};
+    try {
+      setPublishing(true);
+      const res = await fetch(publishUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lesson_id: activeLessonId }),
+      });
 
+      if (!res.ok) {
+        alert(`Failed to publish lesson (HTTP ${res.status}).`);
+        return;
+      }
+
+      await onPublished?.(activeLessonId);
+      alert("Lesson approved and published successfully.");
+    } catch (err) {
+      console.error("Error publishing lesson:", err);
+      alert("Could not reach the publish webhook. Please check your connection and try again.");
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   return (
     <div className="actions">
-      <button onClick={saveLesson}>Save</button>
-      <button onClick={handleRecord}>Record</button>
-      <button
-        onClick={handlePublish}
-        disabled={!lessonId}
-      >
-        Publish
-      </button>
+      <div className="lesson-actions">
+        <button onClick={saveLesson}>Save AI Draft</button>
+        <button onClick={handlePublish} disabled={!activeLessonId || publishing}>
+          {publishing ? "Publishing..." : "Approve and Publish"}
+        </button>
+        <button
+          className="ghost-button"
+          disabled={!activeLessonId}
+          onClick={() => window.open(
+            `/quiz?lesson_id=${encodeURIComponent(activeLessonId)}`,
+            "_blank",
+            "noopener,noreferrer",
+          )}
+        >
+          Preview Learner Quiz
+        </button>
+      </div>
 
-      <input
-        type="email"
-        placeholder="student@example.com"
-        value={testEmail}
-        onChange={(e) => setTestEmail(e.target.value)}
-      />
+      {!activeLessonId && (
+        <p className="muted">
+          Save an AI draft or select a saved lesson to enable publishing and quiz preview.
+        </p>
+      )}
 
-      <button onClick={sendTestEmail}>
-        Send Test Email
-      </button>
+      <form className="learner-preview" onSubmit={sendTestEmail}>
+        <label htmlFor="learner-email">Learner email</label>
+        <input
+          id="learner-email"
+          type="email"
+          required
+          placeholder="student@example.com"
+          value={testEmail}
+          onChange={(e) => setTestEmail(e.target.value)}
+        />
+        <button type="submit">Send Learner Preview</button>
+      </form>
     </div>
   );
 }
